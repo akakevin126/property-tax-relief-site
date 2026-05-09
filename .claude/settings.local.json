@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run *)",
+      "Bash(taskkill //F //PID 36276)",
+      "Bash(curl -s -o /dev/null -w \"HTTP %{http_code}\\\\n\" http://localhost:3000/)",
+      "Bash(curl -s http://localhost:3000/)",
+      "Bash(grep -oE '\\(action|href|src\\)=\"[^\"]*\"' /tmp/cad_home.html | grep -iE \"search|account|property\" | sort -u | head -30)",
+      "Bash(curl -sS -A \"Mozilla/5.0\" \"https://cameron.prodigycad.com/static/js/index.31d50e2d.js\" --max-time 30 -o /tmp/index.js)",
+      "Bash(curl -sS \"https://cameron.prodigycad.com/static/js/715.594116d8.js\" -o /tmp/715.js -A \"Mozilla/5.0\" --max-time 30)",
+      "Bash(grep -oE '`\\\\$\\\\{[^}]+\\\\}/[A-Za-z][A-Za-z0-9/_.?=&{}$:`-]{3,150}|\"/[A-Za-z][A-Za-z0-9/_.?=&-]{3,80}\"' /tmp/715.js)",
+      "Bash(grep -oE 'fetch\\\\\\(`[^`]+`' /tmp/715.js)",
+      "Bash(grep -oE 'fetch\\\\\\([^\\)]{1,200}\\\\\\)' /tmp/715.js)"
+    ]
+  }
+}
