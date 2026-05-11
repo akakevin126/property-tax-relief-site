@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 
 const stats = [
   { value: "91%", label: "Success Rate" },
-  { value: "$620", label: "Avg Annual Savings" },
+  { value: "$2,500", label: "Avg Annual Savings" },
   { value: "4.9 ★", label: "Client Rating" },
   { value: "500+", label: "Properties Protested" },
 ];

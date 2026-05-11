@@ -6,6 +6,7 @@ import HowItWorks from "@/components/HowItWorks";
 import ServicesGrid from "@/components/ServicesGrid";
 import LocalSection from "@/components/LocalSection";
 import TestimonialsSection from "@/components/TestimonialsSection";
+import FAQ from "@/components/FAQ";
 import { ArrowRight } from "lucide-react";
 
 export default function HomePage() {
@@ -18,6 +19,7 @@ export default function HomePage() {
       <ServicesGrid />
       <LocalSection />
       <TestimonialsSection />
+      <FAQ />
 
       <section className="bg-navy text-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 text-center">

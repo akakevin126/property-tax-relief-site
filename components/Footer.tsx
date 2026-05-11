@@ -43,13 +43,16 @@ export default function Footer() {
 
           <div className="text-center md:text-right text-sm text-white/80 space-y-1">
             <div>
-              <a href="tel:[YOUR PHONE]" className="hover:text-gold">
-                [YOUR PHONE]
+              <a href="tel:+19562039464" className="hover:text-gold">
+                (956) 203-9464
               </a>
             </div>
             <div>
-              <a href="mailto:[YOUR EMAIL]" className="hover:text-gold">
-                [YOUR EMAIL]
+              <a
+                href="mailto:propertytaxreliefgroup@gmail.com"
+                className="hover:text-gold break-all"
+              >
+                propertytaxreliefgroup@gmail.com
               </a>
             </div>
           </div>

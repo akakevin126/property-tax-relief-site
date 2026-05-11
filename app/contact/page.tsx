@@ -37,10 +37,10 @@ export default function ContactPage() {
               <div>
                 <div className="text-sm text-navy/60">Phone</div>
                 <a
-                  href="tel:[YOUR PHONE]"
+                  href="tel:+19562039464"
                   className="text-navy font-medium hover:text-gold"
                 >
-                  [YOUR PHONE]
+                  (956) 203-9464
                 </a>
               </div>
             </div>
@@ -50,10 +50,10 @@ export default function ContactPage() {
               <div>
                 <div className="text-sm text-navy/60">Email</div>
                 <a
-                  href="mailto:[YOUR EMAIL]"
+                  href="mailto:propertytaxreliefgroup@gmail.com"
                   className="text-navy font-medium hover:text-gold break-all"
                 >
-                  [YOUR EMAIL]
+                  propertytaxreliefgroup@gmail.com
                 </a>
               </div>
             </div>
