@@ -2,7 +2,11 @@
 
 import { FormEvent, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, CheckCircle2 } from "lucide-react";
+
+type FieldErrors = Partial<Record<"name" | "phone" | "email" | "address", string>>;
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function LeadForm() {
   const params = useSearchParams();
@@ -12,24 +16,46 @@ export default function LeadForm() {
 
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
 
   const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setSubmitting(true);
-    setError(null);
+    setSubmitError(null);
+
     const fd = new FormData(e.currentTarget);
-    const payload = Object.fromEntries(fd.entries());
+    const data = Object.fromEntries(fd.entries()) as Record<string, string>;
+
+    const errs: FieldErrors = {};
+    if (!data.name?.trim()) errs.name = "Please enter your name.";
+    if (!data.phone?.trim()) errs.phone = "Please enter your phone number.";
+    if (!data.email?.trim()) {
+      errs.email = "Please enter your email.";
+    } else if (!EMAIL_RE.test(data.email.trim())) {
+      errs.email = "Please enter a valid email address.";
+    }
+    if (!data.address?.trim()) errs.address = "Please enter the property address.";
+
+    if (Object.keys(errs).length > 0) {
+      setFieldErrors(errs);
+      return;
+    }
+    setFieldErrors({});
+
+    setSubmitting(true);
     try {
       const res = await fetch("/api/lead", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(data),
       });
-      if (!res.ok) throw new Error("Request failed");
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok || json?.success === false) throw new Error("Request failed");
       setSuccess(true);
     } catch {
-      setError("Something went wrong. Please try again or call us directly.");
+      setSubmitError(
+        "Something went wrong. Please call us at (956) 203-9464"
+      );
     } finally {
       setSubmitting(false);
     }
@@ -38,18 +64,28 @@ export default function LeadForm() {
   if (success) {
     return (
       <div className="bg-white max-w-[560px] w-full mx-auto rounded-2xl shadow-md p-8 sm:p-10 border border-cream text-center">
-        <h2 className="font-serif text-3xl text-navy font-bold">Thank you!</h2>
-        <p className="mt-3 text-navy/70">
-          We received your request. A Cameron County specialist will reach out
-          within one business day.
+        <div className="mx-auto w-14 h-14 rounded-full bg-cream flex items-center justify-center">
+          <CheckCircle2 size={32} className="text-gold" />
+        </div>
+        <h2 className="mt-5 font-serif text-3xl text-navy font-bold">
+          We got your request!
+        </h2>
+        <p className="mt-3 text-navy/70 leading-relaxed">
+          We&apos;ll review your Cameron County property and reach out within 1
+          business day. Watch your phone and email.
         </p>
       </div>
     );
   }
 
-  const inputClass =
-    "w-full px-4 py-3 rounded-lg border border-cream bg-white text-navy placeholder:text-navy/40 outline-none focus:border-gold focus:ring-2 focus:ring-gold/30 transition";
+  const inputClass = (hasError?: boolean) =>
+    `w-full px-4 py-3 rounded-lg border bg-white text-navy placeholder:text-navy/40 outline-none focus:ring-2 transition ${
+      hasError
+        ? "border-red-400 focus:border-red-500 focus:ring-red-200"
+        : "border-cream focus:border-gold focus:ring-gold/30"
+    }`;
   const labelClass = "block text-sm font-medium text-navy mb-1.5";
+  const errorClass = "mt-1.5 text-sm text-red-600";
 
   return (
     <div className="bg-white max-w-[560px] w-full mx-auto rounded-2xl shadow-md p-8 sm:p-10 border border-cream">
@@ -61,7 +97,7 @@ export default function LeadForm() {
         much we can save you.
       </p>
 
-      <form onSubmit={onSubmit} className="mt-7 space-y-4">
+      <form onSubmit={onSubmit} noValidate className="mt-7 space-y-4">
         <div>
           <label htmlFor="name" className={labelClass}>
             Full Name
@@ -70,10 +106,12 @@ export default function LeadForm() {
             id="name"
             name="name"
             type="text"
-            required
-            className={inputClass}
+            aria-invalid={!!fieldErrors.name}
+            className={inputClass(!!fieldErrors.name)}
           />
+          {fieldErrors.name && <p className={errorClass}>{fieldErrors.name}</p>}
         </div>
+
         <div>
           <label htmlFor="phone" className={labelClass}>
             Phone Number
@@ -82,10 +120,14 @@ export default function LeadForm() {
             id="phone"
             name="phone"
             type="tel"
-            required
-            className={inputClass}
+            aria-invalid={!!fieldErrors.phone}
+            className={inputClass(!!fieldErrors.phone)}
           />
+          {fieldErrors.phone && (
+            <p className={errorClass}>{fieldErrors.phone}</p>
+          )}
         </div>
+
         <div>
           <label htmlFor="email" className={labelClass}>
             Email Address
@@ -94,10 +136,14 @@ export default function LeadForm() {
             id="email"
             name="email"
             type="email"
-            required
-            className={inputClass}
+            aria-invalid={!!fieldErrors.email}
+            className={inputClass(!!fieldErrors.email)}
           />
+          {fieldErrors.email && (
+            <p className={errorClass}>{fieldErrors.email}</p>
+          )}
         </div>
+
         <div>
           <label htmlFor="address" className={labelClass}>
             Property Address
@@ -106,11 +152,15 @@ export default function LeadForm() {
             id="address"
             name="address"
             type="text"
-            required
             defaultValue={initialAddress}
-            className={inputClass}
+            aria-invalid={!!fieldErrors.address}
+            className={inputClass(!!fieldErrors.address)}
           />
+          {fieldErrors.address && (
+            <p className={errorClass}>{fieldErrors.address}</p>
+          )}
         </div>
+
         <div>
           <label htmlFor="propertyType" className={labelClass}>
             Property Type
@@ -119,12 +169,13 @@ export default function LeadForm() {
             id="propertyType"
             name="propertyType"
             defaultValue={initialType}
-            className={inputClass}
+            className={inputClass(false)}
           >
             <option value="Residential">Residential</option>
             <option value="Commercial">Commercial</option>
           </select>
         </div>
+
         <div>
           <label htmlFor="message" className={labelClass}>
             Message / Notes (optional)
@@ -133,20 +184,22 @@ export default function LeadForm() {
             id="message"
             name="message"
             rows={4}
-            className={inputClass}
+            className={inputClass(false)}
           />
         </div>
-
-        {error && <p className="text-sm text-red-600">{error}</p>}
 
         <button
           type="submit"
           disabled={submitting}
-          className="w-full bg-navy text-white py-3.5 rounded-full font-medium hover:bg-navy-dark transition-colors flex items-center justify-center gap-2 disabled:opacity-60"
+          className="w-full bg-navy text-white py-3.5 rounded-full font-medium hover:bg-navy-dark transition-colors flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
         >
           {submitting ? "Sending..." : "Send My Request"}
           {!submitting && <ArrowRight size={18} />}
         </button>
+
+        {submitError && (
+          <p className="text-sm text-red-600 text-center">{submitError}</p>
+        )}
       </form>
 
       <p className="mt-5 text-center text-sm text-navy/60">
