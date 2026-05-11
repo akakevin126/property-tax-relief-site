@@ -180,6 +180,19 @@ export default function LeadForm() {
         </div>
 
         <div>
+          <label htmlFor="referredBy" className={labelClass}>
+            Were you referred by someone?
+          </label>
+          <input
+            id="referredBy"
+            name="referredBy"
+            type="text"
+            placeholder="Enter their name (optional)"
+            className={inputClass(false)}
+          />
+        </div>
+
+        <div>
           <label htmlFor="message" className={labelClass}>
             Message / Notes (optional)
           </label>

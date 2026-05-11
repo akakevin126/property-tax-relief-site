@@ -19,7 +19,8 @@ export async function POST(req: Request) {
 
   console.log("[lead] raw body received:", body);
 
-  const { name, phone, email, address, propertyType, message } = body;
+  const { name, phone, email, address, propertyType, message, referredBy } =
+    body;
 
   if (!name || !phone || !email || !address) {
     console.warn("[lead] missing fields:", { name, phone, email, address });
@@ -59,10 +60,19 @@ export async function POST(req: Request) {
     propertyType,
     notes: message,
     message,
+    referred_by: referredBy || "",
+    referredBy: referredBy || "",
 
     // routing
     tags: ["website-lead", "property-tax-protest"],
     source: "Property Tax Relief Group Website",
+
+    // also expose nested customField in case the workflow uses that path
+    customField: {
+      property_type: propertyType,
+      notes: message,
+      referred_by: referredBy || "",
+    },
   };
 
   console.log("[lead] payload to GHL:", JSON.stringify(payload));
