@@ -32,19 +32,37 @@ export async function POST(req: Request) {
   const nameParts = name.trim().split(/\s+/);
   const firstName = nameParts[0];
   const lastName = nameParts.slice(1).join(" ") || "";
+  const fullName = `${firstName}${lastName ? " " + lastName : ""}`;
 
+  // Send both snake_case and camelCase top-level fields so the GHL workflow's
+  // Create Contact action can reference whichever convention it was mapped to.
+  // Custom fields are also flattened to the top level for the same reason.
   const payload = {
+    // names
+    first_name: firstName,
     firstName,
+    last_name: lastName,
     lastName,
+    full_name: fullName,
+    name: fullName,
+
+    // contact channels
     phone,
     email,
+
+    // address
     address1: address,
+    address: address,
+
+    // extras (top-level so mappings don't need to traverse nested objects)
+    property_type: propertyType,
+    propertyType,
+    notes: message,
+    message,
+
+    // routing
     tags: ["website-lead", "property-tax-protest"],
     source: "Property Tax Relief Group Website",
-    customField: {
-      property_type: propertyType,
-      notes: message,
-    },
   };
 
   console.log("[lead] payload to GHL:", JSON.stringify(payload));
