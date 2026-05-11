@@ -1,22 +1,28 @@
 import { NextResponse } from "next/server";
 
 const GHL_WEBHOOK =
-  "https://services.leadconnectorhq.com/hooks/3GUJTgyZVEraW2DSelmS/webhook-trigger/b1d58b4b-a67c-41fd-ab75-dd72b7dcd69b";
+  "https://services.leadconnectorhq.com/hooks/3GUJTgyZVEraW2DSeImS/webhook-trigger/b1d58b4b-a67c-41fd-ab75-dd72b7dcd69b";
 
 export async function POST(req: Request) {
+  console.log("[lead] API route hit");
+
   let body: Record<string, string>;
   try {
     body = await req.json();
-  } catch {
+  } catch (err) {
+    console.error("[lead] invalid json:", err);
     return NextResponse.json(
       { success: false, error: "invalid_json" },
       { status: 400 }
     );
   }
 
+  console.log("[lead] raw body received:", body);
+
   const { name, phone, email, address, propertyType, message } = body;
 
   if (!name || !phone || !email || !address) {
+    console.warn("[lead] missing fields:", { name, phone, email, address });
     return NextResponse.json(
       { success: false, error: "missing_fields" },
       { status: 400 }
@@ -41,6 +47,9 @@ export async function POST(req: Request) {
     },
   };
 
+  console.log("[lead] payload to GHL:", JSON.stringify(payload));
+  console.log("[lead] webhook URL:", GHL_WEBHOOK);
+
   try {
     const response = await fetch(GHL_WEBHOOK, {
       method: "POST",
@@ -48,14 +57,38 @@ export async function POST(req: Request) {
       body: JSON.stringify(payload),
     });
 
-    if (!response.ok) {
-      console.error("GHL webhook failed:", response.status, await response.text());
-      return NextResponse.json({ success: false }, { status: 500 });
+    const respText = await response.text();
+    console.log("[lead] GHL status:", response.status);
+    console.log("[lead] GHL response body:", respText);
+
+    // GHL returns HTTP 200 even on rejection — the real error lives in the
+    // response body's "status" field. Parse and treat that as failure too.
+    let ghlAccepted = response.ok;
+    if (ghlAccepted && respText) {
+      try {
+        const parsed = JSON.parse(respText);
+        if (
+          typeof parsed?.status === "string" &&
+          parsed.status.toLowerCase().startsWith("error")
+        ) {
+          console.error("[lead] GHL rejected payload:", parsed.status);
+          ghlAccepted = false;
+        }
+      } catch {
+        // non-JSON body — leave ghlAccepted as response.ok
+      }
+    }
+
+    if (!ghlAccepted) {
+      return NextResponse.json(
+        { success: false, error: "ghl_rejected", detail: respText },
+        { status: 502 }
+      );
     }
 
     return NextResponse.json({ success: true });
   } catch (err) {
-    console.error("GHL webhook error:", err);
+    console.error("[lead] fetch threw:", err);
     return NextResponse.json({ success: false }, { status: 500 });
   }
 }

@@ -44,15 +44,18 @@ export default function LeadForm() {
 
     setSubmitting(true);
     try {
+      console.log("[LeadForm] submitting data to /api/lead:", data);
       const res = await fetch("/api/lead", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
       const json = await res.json().catch(() => ({}));
+      console.log("[LeadForm] response", { status: res.status, body: json });
       if (!res.ok || json?.success === false) throw new Error("Request failed");
       setSuccess(true);
-    } catch {
+    } catch (err) {
+      console.error("[LeadForm] submission failed:", err);
       setSubmitError(
         "Something went wrong. Please call us at (956) 203-9464"
       );
