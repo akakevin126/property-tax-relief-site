@@ -67,11 +67,11 @@ export async function POST(req: Request) {
     tags: ["website-lead", "property-tax-protest"],
     source: "Property Tax Relief Group Website",
 
-    // also expose nested customField in case the workflow uses that path
+    // GHL custom fields are referenced by dotted keys like "contact.<key>"
     customField: {
-      property_type: propertyType,
-      notes: message,
-      referred_by: referredBy || "",
+      "contact.referred_by": referredBy || "",
+      "contact.property_type": propertyType,
+      "contact.notes": message,
     },
   };
 
